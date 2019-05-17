@@ -1,0 +1,601 @@
+===============================================================================================================================================================
+*************************************************** DAY 2 *****************************************************************************************************
+===============================================================================================================================================================
+
+npsoni88
+
+service ngninx restart
+
+
+ToDo :
+
+1. Need to create master slave
+2. Generate public private key
+
+
+cd .ssh/
+
+ssh-keygen
+
+cd /.ssh
+ls
+authorized-keys
+
+
+/etc/hosts
+
+known_hosts
+
+ssh root@jenkins-slave1(slave ip address or name)
+
+
+Slave2:
+copy public key from root user
+suod su
+cd .ssh/
+authorized_keys
+
+Go back to master
+ssh jenkins-slave2
+
+==============================================================================================================
+problems with ssh
+==============================================================================================================
+telnet jenkins-slave2 22
+
+==============================================================================================================
+jenkins slave setup
+==============================================================================================================
+Junins -->Nodes
+
+name : 
+
+Remote root directory - /var/lib/kenkins
+
+Usage : use this node as much as possible
+Launch Method : Launch agent against via SSh
+Host : Slave host key
+Credentials: below steps
+
+
+
+Credentials --> System --> Globalcredentials --> Add Credentials --> 
+
+kind : SSH username and public key
+Scope : 
+Id : USER1
+Description : Any description
+username : root
+private key : goto matser --> id_rsa --> copy all and paste in jenkins
+
+ManageJenkins --> ManageJenkins --> Credentials --> select from dropdown for the suer craeted in above step
+
+==============================================================================
+Job to update OS
+===================================================
+
+Restrict based on agent name or label defined
+
+*****************Maven commands will get executed if we added plugin for maven rather installed in server**********************************
+
+=======================================================================================================
+Ruby Scripting
+=======================================================================================================
+
+
+======================================================================================================================
+*****************************************   Docker *******************************************************************
+======================================================================================================================
+Virual Box : download ubuntu desktop
+
+docker comamnds:
+
+docker ps
+docker ps -
+docker ps -a
+
+docker images
+
+--------pull images from docker pub--------------
+docker pull nginx
+
+docker run -itd nginx(name of image that want to run on docker)
+
+docker rm (to remove container)
+docker rmi (to remove image)
+
+docker start containerid/name
+docker stop containerid/name
+
+
+docker run -itd tomcat (to pull image from dockerhub)
+
+docker run -itd --name devops_container (to provide a name to image)
+docker run -itd --name devops_container -p(to add a port for image) Xx(Port of host):Xx(port of container) nginx
+
+docker run -itd --name devops_container -p(to add a port for image) Xx(Port of host):Xx(port of container) nginx
+
+--Can change port fo server, cannot change port of container
+
+docker run -itd --name devops_container -p 80:80 tomcat (for tomcat)
+
+docker exec -it tcs_container /bin/bash (to )
+
+================================================================================================
+Linux commands
+================================================================================================
+
+ls
+which ls
+chroot -- jailed access in linux
+
+
+===================================================================================================================================================
+*********************************************************Day 3************************************************************************************
+===================================================================================================================================================
+
+Crteating space in host and dockerimage
+how to mount data between hostOS and docker image
+
+
+Craete an ubuntu image
+		install required s/w
+Come back to root
+		docker commit mycontainer(name of ubuntu container) myimage
+	docker run -itd --name webserver -p 80:80 myimage
+
+docker history imagename
+
+
+DFocker login steps
+docker login
+	prompt for username and password
+docker tag myimage(imagename) username/mytcs
+dokcer images
+docker push username/mytcs
+
+from ubuntu
+maintainer "Venkat"
+RUN apt-get update
+RUN apt-get install -y vim
+RUN apt-get install -y nginx
+RUN apt-get install -y git
+
+from tomcat
+/usr/local/tomcat/webapps (copy war file to this path to run application bu tomcat)
+
+doing above step using docker file
+FROM tomcat
+ADD addressbook.war /usr/local/tomcat/webapps
+CMD "catalina.sh" "run"
+
+mkdir docker
+cd docker/
+
+cd /var/lib/jenkins/workspace
+cd DevPackage
+ls
+cd target/
+
+
+docker build . -t venkatgude90/tcsapp
+
+docker run -itd --name addressbook -p 9091:8080 venkatgude90/tcsapp
+
+
+steps for auto deployment from jenkins
+
+
+create a directory called App(rm rf App (delete directory if exists and create new) )
+1. Copy war file
+2. create docker file
+3. build
+4. push to dockerhub
+5. deploy application in a container
+
+Node and label parameter plugin to run jobs on multiple nodes in jenkins
+
+==================================================================================================================================================================
+Docker Swarn
+==================================================================================================================================================================
+Install docker on all master and slave machines to work with docker swarm
+
+Docker swarm setup in master
+
+docker swarm init --advertise-addr
+=============================================
+output :
+===============================================
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-38vtkegnszqpleop1lei071quilkiptsr058hj96k3n9tqm0u0-0wy9p56nszcxg2u5q54gznasv 10.160.0.8:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+add a service to docker:
+docker service create --name webservice 90:80 nginx
+
+docker service ps webservice
+docker service scale webservice=10
+docker node ls
+
+
+================================================================================================================================================================
+****************************************************************** Kuberenetes *********************************************************************************
+================================================================================================================================================================
+
+K8's can be SelfHosted 
+K8 as a service
+
+Setup K8's and interact with cloud:
+
+gcloud
+gcloud init
+gcloud compute instances list
+gcloud compute instances create
+gcloud compute instances delete
+
+gcloud container clusters create k8s(name that want to give for cluster) --zone=asia-south1-c
+kubectl version
+kubectl get nodes
+
+PODs in K8's:
+
+yaml file creation
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sample-pod
+  labels:
+    env: prod
+    version: v1
+spec:
+  containers:
+   - name: sample-container
+     image: nginx
+     ports:
+     - containerPort: 80
+
+
+K8 commands:
+==================================
+kubectl get pods
+kubectl create -f pod.yaml
+kubectl describe pods podname
+
+curl 10.12.0.6:80
+
+=================================================================================================================================================================
+***************************************************************************** DAY4 ******************************************************************************
+=================================================================================================================================================================
+
+Creating deploymemnt using kuberenetes
+Need to understand create deployments using k8's
+
+create Deploy.yaml
+
+
+Kubectl commands:
+=============================================
+kubectl get deployment
+kubectl describe deployment "deployment-name"
+kubectl describe pods | grep -i IP
+
+kubectl apply -f Deploy.yaml
+kubectl get pods -o wide
+
+Creating Services/Networking in K8s:
+==================================================
+craete service.yaml as below
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: MyApp
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 9376
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 9377
+
+kubectl create -f service.yaml
+
+kubectl get service
+kubectl describe service my-service
+
+kubectl delete service my-service
+
+
+service.yaml(fro networking)
+===========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  labels:
+    service: my-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    nodePort: 32222
+    protocol: TCP
+  selector:
+    app: my-app
+
+
+docker networking:
+====================================
+ip addr
+docker network ls
+
+
+Creating deployment of application
+
+write deployment.yaml file
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: addressbookdeployment
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: addressbook
+    spec:
+      containers:
+      - name: addressbookcontainer
+        image: npsoni/maytcs:latest
+        ports:
+         - containerPort: 8080
+
+create -f deployment.yaml
+
+kubectl describe  pods addressbookdeployment
+
+create addressbookservice.yaml
+===========================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: addressbook-loadbalancer
+  labels:
+    service: addressbook-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    nodePort: 31444
+    protocol: TCP
+  selector:
+    app: addressbook
+
+
+kubectl apply -f addressbookdeployment.yaml --record
+
+kubectl rollout status deployment addressbookdeployment
+
+kubectl describe deployments addressbookdeployment
+
+kubectl get rs (to get list of replica sets )
+
+revert to previous deployments after changing image
+=========================================================================
+kubectl rollout status deployment addressbookdeployment
+
+kubectl rollout history deployment addressbookdeployment
+
+kubectl rollout undo deployment addressbookdeployment --to-revesion=1
+
+kubectl get pods 
+
+******************************************************END OF K8's********************************************************************************
+
+======================================================================================================================================================================
+**************************************************************************** DAY 5 ***********************************************************************************
+======================================================================================================================================================================
+
+Ansible
+========================
+
+
+ansible -m user -a "name=tcs password=password" all
+
+to view users
+===================
+	cat /etc/passwd
+To add user in linux : adduser shrimati
+Copy file to infrastructure:
+ansible -m copy -a "src=/tmp/asiblefile dest=/tmp/ansiblefile" 
+ansible -m setup servers(name of server)
+filter in ansible : ansible -m setup servers 
+ansible -m setup servers -a "filter=ansible_distribution" (to )
+
+Playbooks:
+======================================
+create a playbook
+
+playbook1.yaml:
+==========================
+--- (always starts with three ---)
+- hosts: all
+  become : true
+  become_user: root (optional)
+  tasks:
+  - name: copy a file
+    copy: src=/tmp/ansiblefile dest=/tmp/ansiblefile
+  - name: create a user
+    user: name=tcs2 password=mypassword
+
+execute playbook:
+
+anisble-playbook playbook.yaml
+
+to ckeck any error in playbook:
+anisble-playbook playbook.yaml --syntax-check (to check syntax in ansible)
+anisble-playbook playbook.yaml --check (for dry run and understand playbook)
+
+
+playbook2.yaml:
+================================
+---
+- hosts: servers
+  become: true
+  gather_facts: false
+  tasks:
+  - name: copy a batch file
+    copy: src=/root/ansible/test.sh dest=/tmp/test.sh
+  - name:
+    command: bash /tmp/test.sh
+
+test.sh:
+======================
+apt-get update
+apt-get install -y git
+apt-get install -y htop
+
+check : ansible-playbook playbook2.yaml --check
+
+
+Playbook3.yaml:
+===========================
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+  - name: install git
+     apt:
+      name: git
+      state: present 
+
+===========================================
+
+Multiple installation using single command:
+========================================================================
+---
+- hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+  - name: install git
+     apt:
+      name: {{ item }}
+      state: present
+     with_items:
+     - git
+     - ntp
+     - htop   
+
+Playbook4.yaml:
+====================================================================
+---
+- hosts: all
+  become: true
+  vars:
+    src_path: /root/index.html
+    dest_path: /var/www/html
+  tasks:
+  - name: install apache2
+    apt:
+      name: apache2
+      state: present
+  - name: start service
+    service: name=apache2 state=started enabled=yes
+  - name: copyingh file to remote location
+    copy: src={{ src_path }} dest={{ dest_path }}/index.html
+    notify: restart_apache2    
+
+  handlers:
+  - name: restart_apache2
+    service: name=apache2 state=restarted  
+
+
+==============================================================================
+
+
+
+---
+- hosts: all
+  become: true
+  vars:
+    src_path: /root/index.html
+    dest_path: /var/www/html
+  tasks:
+  - name: install apache2
+    apt:
+      name: apache2
+      state: present
+      when: ansible_distribution='ubuntu'
+
+  - name: install httpd
+    yum:
+      name: httpd
+      state: present
+      when: ansible_distribution='CentOS'
+
+  - name: start apache2
+    service: name=apache2 state=started enabled=True
+    when: ansible_distribution='ubuntu'
+
+  - name: start httpd
+    service: name=httpd state=started enabled=True
+    when: ansible_distribution='CentOS'    
+
+  - name: copyingh file to remote location
+    copy: src={{ src_path }} dest={{ dest_path }}/index.html
+
+  - name: restart_apache2
+    service: name=apache2 state=restarted  
+    when: ansible_distribution='ubuntu'
+
+  - name: restart_httpd
+    service: name=httpd state=restarted
+    when: ansible_distribution='CentOS'
+
+
+
+========================================================================
+Directories:
+
+Roles/apache
+  vars
+    main.yaml
+  handlers
+    main.yml
+  tasks
+    main.yml
+  files
+    index.html
+
+Inside Roles:
+===========================
+  site.yml
+===========================
+---
+- hosts: servers
+  become:yes
+  roles:
+    - apache
+
+=======================================================================
+
+ansible-playbook site.yml
+
+===========================================================********************************************============================================================
+
+
+
+
+
